@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.Networking;
 using SimpleJSON;
 using UnityEngine.UI;
+using System.Text;
 
 public class API : MonoBehaviour
 {
@@ -73,12 +74,13 @@ public class API : MonoBehaviour
     }
 
     //change name to more appropiate name for the job ;)
-    private IEnumerator SendData()
+    public IEnumerator MakeGame(int rounds, int time)
     {
         WWWForm form = new WWWForm();
-        form.AddField("myField", "myData");
+        form.AddField("rounds", rounds);
+        form.AddField("time", time);
 
-        using (UnityWebRequest www = UnityWebRequest.Post("http://www.my-server.com/myform", form))
+        using (UnityWebRequest www = UnityWebRequest.Post("http://78.141.212.87:8000/games/makegame", form))
         {
             yield return www.SendWebRequest();
 
@@ -88,7 +90,20 @@ public class API : MonoBehaviour
             }
             else
             {
-                Debug.Log("Form upload complete!");
+                //Debug.Log("Form upload complete!");
+
+                // Print Body
+                Debug.Log(www.downloadHandler.text);
+
+                JSONNode info = JSONNode.Parse(www.downloadHandler.text);
+
+                string pin = info["pin"];
+                string id = info["_id"];
+
+                GameMaster.Instance.roomPin = pin;
+                Debug.Log(GameMaster.Instance.roomPin);
+                PusherManager.instance.StartPusher();
+                //Debug.Log(pin + "\n" + id);
             }
         }
     }

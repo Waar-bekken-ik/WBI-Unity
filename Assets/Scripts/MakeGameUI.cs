@@ -31,7 +31,10 @@ public class MakeGameUI : MonoBehaviour
     {
         makePanel.SetActive(false);
         startPanel.SetActive(true);
-        //send data
+
+        StartCoroutine(API.Instance.MakeGame(int.Parse(rounds.text), int.Parse(time.text)));
+
+
     }
 
     public void StartGame()

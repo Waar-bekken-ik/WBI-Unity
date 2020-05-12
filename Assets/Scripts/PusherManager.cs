@@ -22,8 +22,12 @@ public class PusherManager : MonoBehaviour
             Destroy(gameObject);
         }
         DontDestroyOnLoad(gameObject);
-        await InitialisePusher();
         Console.WriteLine("Starting");
+    }
+
+    public async void StartPusher()
+    {
+        await InitialisePusher();
     }
 
     private async Task InitialisePusher()
@@ -41,7 +45,7 @@ public class PusherManager : MonoBehaviour
             _pusher.Error += OnPusherOnError;
             _pusher.ConnectionStateChanged += PusherOnConnectionStateChanged;
             _pusher.Connected += PusherOnConnected;
-            _channel = await _pusher.SubscribeAsync("my-channel");
+            _channel = await _pusher.SubscribeAsync(GameMaster.Instance.roomPin);
             _channel.Subscribed += OnChannelOnSubscribed;
             await _pusher.ConnectAsync();
         }
