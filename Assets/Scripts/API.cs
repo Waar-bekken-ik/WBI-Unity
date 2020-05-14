@@ -35,7 +35,7 @@ public class API : MonoBehaviour
 
     private void Start()
     {
-        StartCoroutine(GetData());
+        //StartCoroutine(GetData());
     }
 
     //change name to more appropiate name for the job ;)
@@ -74,11 +74,16 @@ public class API : MonoBehaviour
     }
 
     //change name to more appropiate name for the job ;)
-    public IEnumerator MakeGame(int rounds, int time)
+    public IEnumerator MakeGame(int rounds, int time, string[] questions)
     {
         WWWForm form = new WWWForm();
         form.AddField("rounds", rounds);
         form.AddField("time", time);
+
+        foreach(string question in questions)
+        {
+            form.AddField("questions[]", question);
+        }
 
         using (UnityWebRequest www = UnityWebRequest.Post("http://78.141.212.87:8000/games/makegame", form))
         {
@@ -99,11 +104,11 @@ public class API : MonoBehaviour
 
                 string pin = info["pin"];
                 string id = info["_id"];
-
-                GameMaster.Instance.roomPin = pin;
-                Debug.Log(GameMaster.Instance.roomPin);
+      
+                GameMaster.Instance.game.setPin(pin);
+                Debug.Log(pin);
                 PusherManager.instance.StartPusher();
-                //Debug.Log(pin + "\n" + id);
+                GameMaster.Instance.setPinCodeUI();
             }
         }
     }

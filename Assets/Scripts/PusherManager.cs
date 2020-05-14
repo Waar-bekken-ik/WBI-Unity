@@ -45,7 +45,9 @@ public class PusherManager : MonoBehaviour
             _pusher.Error += OnPusherOnError;
             _pusher.ConnectionStateChanged += PusherOnConnectionStateChanged;
             _pusher.Connected += PusherOnConnected;
-            _channel = await _pusher.SubscribeAsync(GameMaster.Instance.roomPin);
+            _pusher.Connected += PusherOnConnectedPlayerJoin;
+
+            _channel = await _pusher.SubscribeAsync(GameMaster.Instance.game.getPin());
             _channel.Subscribed += OnChannelOnSubscribed;
             await _pusher.ConnectAsync();
         }
@@ -61,6 +63,16 @@ public class PusherManager : MonoBehaviour
         _channel.Bind("my-event", (dynamic data) =>
         {
             Debug.Log("data= " +  data.data);
+        });
+    }
+
+    private void PusherOnConnectedPlayerJoin(object sender)
+    {
+        Debug.Log("Connected to player join");
+        _channel.Bind("player-joining", (dynamic data) =>
+        {
+            Debug.Log("joined= " + data.data);
+            //GameMaster.Instance.playerSubscribed(data.data);
         });
     }
 

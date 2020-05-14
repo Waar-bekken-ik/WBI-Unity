@@ -15,26 +15,24 @@ public class MakeGameUI : MonoBehaviour
     public GameObject makePanel;
     public GameObject startPanel;
 
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
-
     public void MakeGame()
     {
         makePanel.SetActive(false);
         startPanel.SetActive(true);
+        string[] questions = new string[] { "eierstokken", "schaamlippen" };
 
-        StartCoroutine(API.Instance.MakeGame(int.Parse(rounds.text), int.Parse(time.text)));
+        GameMaster.Instance.game.setMakeRoom(int.Parse(rounds.text), int.Parse(time.text), questions);
+    }
 
+    public void addPlayerName(string name)
+    {
+        people.text = name + "\n";
+        Debug.Log("IN KANKER NAME CHANGE UI");
+    }
 
+    public void setPinCode()
+    {
+        roomCode.text = GameMaster.Instance.game.getPin();
     }
 
     public void StartGame()

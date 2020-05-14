@@ -4,7 +4,9 @@ using UnityEngine;
 
 public class GameMaster : MonoBehaviour
 {
-    public string roomPin;
+    //jaja private maken met gameobject.find getcomponent<> etc --still testing and concpet fase
+    public Game game;
+    public MakeGameUI makeUI;
 
     #region Singleton
     private static GameMaster _instance;
@@ -35,9 +37,20 @@ public class GameMaster : MonoBehaviour
         
     }
 
-    // Update is called once per frame
-    void Update()
+    public void playerSubscribed(string name)
     {
-        
+        game.setPlayers();
+        makeUI.addPlayerName(name);
+        Debug.Log("IN KANKER NAME CHANGE");
+    }
+
+    public void setPinCodeUI()
+    {
+        makeUI.setPinCode();
+    }
+
+    public void makeRoom()
+    {
+
     }
 }
