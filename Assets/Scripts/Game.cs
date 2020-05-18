@@ -7,7 +7,7 @@ public class Game : MonoBehaviour
     private string pin;
     private int rounds;
     private int time;
-    private string[] questions;
+    private List<string> questions = new List<string>();
     private int players;
 
     public string getPin()
@@ -30,17 +30,31 @@ public class Game : MonoBehaviour
         return players;
     }
 
-    public void setMakeRoom(int roundsRoom, int timeRoom, string[] questionsRoom)
+    public void setMakeRoom(int roundsRoom, int timeRoom)
     {
         rounds = roundsRoom;
         time = timeRoom;
-        questions = questionsRoom;
         makeRoom();
+    }
+
+    public void addQuestion(string name)
+    {
+        questions.Add(name);
+    }
+
+    public void removeQuestion(string name)
+    {
+        questions.Remove(name);
     }
 
     private void makeRoom()
     {
         StartCoroutine(API.Instance.MakeGame(rounds, time, questions));
+    }
+
+    public void startGame()
+    {
+        StartCoroutine(API.Instance.StartGame(pin));
     }
 
     public override string ToString()

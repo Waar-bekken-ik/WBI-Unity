@@ -74,7 +74,7 @@ public class API : MonoBehaviour
     }
 
     //change name to more appropiate name for the job ;)
-    public IEnumerator MakeGame(int rounds, int time, string[] questions)
+    public IEnumerator MakeGame(int rounds, int time, List<string> questions)
     {
         WWWForm form = new WWWForm();
         form.AddField("rounds", rounds);
@@ -113,9 +113,34 @@ public class API : MonoBehaviour
         }
     }
 
+     //change name to more appropiate name for the job ;)
+    public IEnumerator StartGame(string pin)
+    {
+        WWWForm form = new WWWForm();
+        form.AddField("pin", pin);
+
+        using (UnityWebRequest www = UnityWebRequest.Post("http://78.141.212.87:8000/games/startgame", form))
+        {
+            yield return www.SendWebRequest();
+
+            if (www.isNetworkError || www.isHttpError)
+            {
+                Debug.Log(www.error);
+            }
+            else
+            {
+                //Debug.Log("Form upload complete!");
+
+                // Print Body
+                Debug.Log(www.downloadHandler.text);
+
+                //JSONNode info = JSONNode.Parse(www.downloadHandler.text);
+            }
+        }
+    }
+
     private string CapitializeFirstCharacter(string str)
     {
         return char.ToUpper(str[0]) + str.Substring(1);
     }
-
 }

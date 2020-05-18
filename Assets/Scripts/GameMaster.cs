@@ -40,6 +40,7 @@ public class GameMaster : MonoBehaviour
     public void playerSubscribed(string name)
     {
         game.setPlayers();
+        Debug.Log("1");
         makeUI.addPlayerName(name);
         Debug.Log("IN KANKER NAME CHANGE");
     }
