@@ -7,6 +7,7 @@ public class GameMaster : MonoBehaviour
     //jaja private maken met gameobject.find getcomponent<> etc --still testing and concpet fase
     public Game game;
     public MakeGameUI makeUI;
+    public List<string> availableQuestions = new List<string>();
 
     #region Singleton
     private static GameMaster _instance;
@@ -29,20 +30,20 @@ public class GameMaster : MonoBehaviour
     {
         //start values
         _instance = this;
+
+        StartCoroutine(API.Instance.GetAnswers());
     }
 
     // Start is called before the first frame update
     void Start()
     {
-        
+        //StartCoroutine(API.Instance.GetAnswers());
     }
 
     public void playerSubscribed(string name)
     {
         game.setPlayers();
-        Debug.Log("1");
-        makeUI.addPlayerName(name);
-        Debug.Log("IN KANKER NAME CHANGE");
+        //makeUI.addPlayerName(name);
     }
 
     public void setPinCodeUI()

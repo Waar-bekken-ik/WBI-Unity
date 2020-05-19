@@ -10,6 +10,9 @@ public class Game : MonoBehaviour
     private List<string> questions = new List<string>();
     private int players;
 
+    private int questionCounter = 0;
+    private string currentQuestion;
+
     public string getPin()
     {
         return pin;
@@ -28,6 +31,11 @@ public class Game : MonoBehaviour
     public int getPlayers()
     {
         return players;
+    }
+
+    public string getCurrentQuestion()
+    {
+        return currentQuestion;
     }
 
     public void setMakeRoom(int roundsRoom, int timeRoom)
@@ -55,6 +63,18 @@ public class Game : MonoBehaviour
     public void startGame()
     {
         StartCoroutine(API.Instance.StartGame(pin));
+    }
+
+    public void nextQuestion()
+    {
+        StartCoroutine(API.Instance.NextQuestion(pin, questions[questionCounter]));
+        currentQuestion = questions[questionCounter];
+        questionCounter++;
+    }
+
+    public void checkAnswer()
+    {
+        StartCoroutine(API.Instance.correctAnswer(pin, questions[questionCounter-1]));
     }
 
     public override string ToString()

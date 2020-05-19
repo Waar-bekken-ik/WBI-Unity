@@ -25,7 +25,7 @@ public class API : MonoBehaviour
     }
     #endregion
 
-    private readonly string baseURL = "https://pokeapi.co/api/v2/";
+    private readonly string baseURL = "http://78.141.212.87:8000/";
 
     void Awake()
     {
@@ -39,11 +39,9 @@ public class API : MonoBehaviour
     }
 
     //change name to more appropiate name for the job ;)
-    private IEnumerator GetData()
+    public IEnumerator GetAnswers()
     {
-        Debug.Log("API ROUTINE STARTED");
-
-        string URL = baseURL + "pokemon/50";
+        string URL = baseURL + "answers/getanswers";
 
         UnityWebRequest infoRequest = UnityWebRequest.Get(URL);
         yield return infoRequest.SendWebRequest();
@@ -57,20 +55,27 @@ public class API : MonoBehaviour
 
         JSONNode info = JSONNode.Parse(infoRequest.downloadHandler.text);
 
-        string pokeName = info["name"];
-        string pokeSPriteURL = info["sprites"]["front_default"];
+        // string pokeName = info["name"];
+        // string pokeSPriteURL = info["sprites"]["front_default"];
 
-        JSONNode pokeTypes = info["types"];
-        string[] pokeTypeNames = new string[pokeTypes.Count];
+        JSONNode answers = info["answers"];
+        // string[] pokeTypeNames = new string[answers.Count];
+        List<string> answersList = new List<string>();
 
-        for (int i = 0, j = pokeTypes.Count -1; i < pokeTypes.Count; i++, j--)
+        // for (int i = 0, j = answers.Count -1; i < answers.Count; i++, j--)
+        // {
+        //     pokeTypeNames[j] = answers[i]["type"]["name"];
+        // }
+
+        for(int i = 0; i < answers.Count; i++)
         {
-            pokeTypeNames[j] = pokeTypes[i]["type"]["name"];
+            answersList.Add(answers[i]);
+            Debug.Log(answers[i]);
         }
 
-        Debug.Log("MADE IT SHIT FAR");
+        GameMaster.Instance.availableQuestions = answersList;
 
-        Debug.Log(pokeName + "\n" + pokeSPriteURL + "\n" + pokeTypeNames.ToString());
+        //Debug.Log(pokeName + "\n" + pokeSPriteURL + "\n" + pokeTypeNames.ToString());
     }
 
     //change name to more appropiate name for the job ;)
@@ -84,6 +89,8 @@ public class API : MonoBehaviour
         {
             form.AddField("questions[]", question);
         }
+
+        string URL = baseURL + "games/makegame";
 
         using (UnityWebRequest www = UnityWebRequest.Post("http://78.141.212.87:8000/games/makegame", form))
         {
@@ -120,6 +127,58 @@ public class API : MonoBehaviour
         form.AddField("pin", pin);
 
         using (UnityWebRequest www = UnityWebRequest.Post("http://78.141.212.87:8000/games/startgame", form))
+        {
+            yield return www.SendWebRequest();
+
+            if (www.isNetworkError || www.isHttpError)
+            {
+                Debug.Log(www.error);
+            }
+            else
+            {
+                //Debug.Log("Form upload complete!");
+
+                // Print Body
+                Debug.Log(www.downloadHandler.text);
+
+                //JSONNode info = JSONNode.Parse(www.downloadHandler.text);
+            }
+        }
+    }
+
+    public IEnumerator NextQuestion(string pin, string answer)
+    {
+        WWWForm form = new WWWForm();
+        form.AddField("pin", pin);
+        form.AddField("correctAnswer", answer);
+
+        using (UnityWebRequest www = UnityWebRequest.Post("http://78.141.212.87:8000/games/nextquestion", form))
+        {
+            yield return www.SendWebRequest();
+
+            if (www.isNetworkError || www.isHttpError)
+            {
+                Debug.Log(www.error);
+            }
+            else
+            {
+                //Debug.Log("Form upload complete!");
+
+                // Print Body
+                Debug.Log(www.downloadHandler.text);
+
+                //JSONNode info = JSONNode.Parse(www.downloadHandler.text);
+            }
+        }
+    }
+
+    public IEnumerator correctAnswer(string pin, string answer)
+    {
+        WWWForm form = new WWWForm();
+        form.AddField("pin", pin);
+        form.AddField("correctAnswer", answer);
+
+        using (UnityWebRequest www = UnityWebRequest.Post("http://78.141.212.87:8000/games/sendcorrectanswer", form))
         {
             yield return www.SendWebRequest();
 
