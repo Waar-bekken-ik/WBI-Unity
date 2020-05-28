@@ -17,19 +17,25 @@ public class MakeGameUI : MonoBehaviour
     public GameObject questionPanel;
 
     private List<string> dublicateNames = new List<string>();
+    private List<string> dublicateNamesAnswered = new List<string>();
+
+
     private bool joining = true;
     private bool playing = false;
 
     public GameObject scrollViewContent;
     public GameObject myToggle;
+    public Text currentQuestion;
+    public Text peopleAnswered;
+    public Text peopleCount;
 
     void Start() 
     {
         //als api request er is de data daarmee aanvullen
-        string[] questions = new string[] { "eierstokken", "schaamlippen", "dunnedarm", "dikkedarm", "schaamlippen"};
+        //string[] questions = new string[] { "eierstokken", "schaamlippen", "dunnedarm", "dikkedarm", "schaamlippen"};
         float startPos = 135;
 
-        foreach(string question in questions)
+        foreach(string question in GameMaster.Instance.availableQuestions)
         {
             var toggle = Instantiate(myToggle, new Vector3(0,0,0), Quaternion.identity);
             toggle.transform.SetParent(scrollViewContent.transform);
@@ -47,10 +53,25 @@ public class MakeGameUI : MonoBehaviour
         GameMaster.Instance.game.setMakeRoom(int.Parse(rounds.text), int.Parse(time.text));
     }
 
+    public void NextQuestion()
+    {
+        GameMaster.Instance.game.nextQuestion();
+        currentQuestion.text = GameMaster.Instance.game.getCurrentQuestion();
+
+        dublicateNamesAnswered.Clear();
+        PusherManager.instance.ResetPlayerAnswered();
+        peopleAnswered.text = "";
+        peopleCount.text =  "0" + "/" + dublicateNames.Count.ToString();
+    }
+
+    public void CheckAnswer()
+    {
+        GameMaster.Instance.game.checkAnswer();
+    }
+
     public void addPlayerName(string name)
     {
         people.text = name + "\n";
-        Debug.Log("IN KANKER NAME CHANGE UI");
     }
 
     public void setPinCode()
@@ -64,7 +85,10 @@ public class MakeGameUI : MonoBehaviour
         joining = false;
         makePanel.SetActive(false);
         startPanel.SetActive(false);
+
         questionPanel.SetActive(true);
+        //NextQuestion();
+        StartCoroutine(waitTillStart());
 
         //InCoroutine straks:
         playing = true;
@@ -79,11 +103,11 @@ public class MakeGameUI : MonoBehaviour
         
         if(playing)
         {
-            //fillPlayerAnswers();
-            //verder gaan vanaf hier
+            fillPlayerAnswers();
         }
     }
 
+    //Nog niet DRY, moest 1 gemaakt worden, nu dit voor testing
     private void fillPlayers()
     {
         //pusher werkt kut, sorry voor deze lelijke slechte code;
@@ -96,5 +120,26 @@ public class MakeGameUI : MonoBehaviour
                 break;
             }
         }
+    }
+
+    private void fillPlayerAnswers()
+    {
+        //pusher werkt kut, sorry voor deze lelijke slechte code;
+        foreach (string player in PusherManager.instance.getPlayerAnswered())
+        {
+            if (!dublicateNamesAnswered.Contains(player))
+            {
+                dublicateNamesAnswered.Add(player);
+                peopleAnswered.text += player + "\n";
+                peopleCount.text =  PusherManager.instance.getPlayerAnswered().Count.ToString() + "/" + dublicateNames.Count.ToString();
+                break;
+            }
+        }
+    }
+
+    private IEnumerator waitTillStart()
+    {
+        yield return new WaitForSeconds(1f);
+        NextQuestion();
     }
 }

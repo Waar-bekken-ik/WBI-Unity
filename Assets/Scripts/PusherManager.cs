@@ -79,8 +79,6 @@ public class PusherManager : MonoBehaviour
             Debug.Log("answered= " + data.data);
             playerAnswered.Add(data.data.ToString());
         });
-
-        
     }
 
     private void PusherOnConnectionStateChanged(object sender, ConnectionState state)
@@ -96,6 +94,11 @@ public class PusherManager : MonoBehaviour
     public List<string> getPlayerAnswered()
     {
         return playerAnswered;
+    }
+
+    public void ResetPlayerAnswered()
+    {
+        playerAnswered.Clear();
     }
 
     private void OnPusherOnError(object s, PusherException e)
