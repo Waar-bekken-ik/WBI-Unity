@@ -17,6 +17,14 @@ public class Game : MonoBehaviour
     {
         return pin;
     }
+    public int getTime()
+    {
+        return time;
+    }
+    public int getRounds()
+    {
+        return rounds;
+    }
     public void setPin(string pinRoom)
     {
         if(pin == null)
@@ -65,11 +73,14 @@ public class Game : MonoBehaviour
         StartCoroutine(API.Instance.StartGame(pin));
     }
 
-    public void nextQuestion()
+    public void nextQuestion(bool last)
     {
-        StartCoroutine(API.Instance.NextQuestion(pin, questions[questionCounter]));
-        currentQuestion = questions[questionCounter];
-        questionCounter++;
+        if(questionCounter <= rounds)
+        {
+            StartCoroutine(API.Instance.NextQuestion(pin, questions[questionCounter], last));
+            currentQuestion = questions[questionCounter];
+            questionCounter++;
+        }
     }
 
     public void checkAnswer()
