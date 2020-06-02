@@ -146,16 +146,11 @@ public class API : MonoBehaviour
         }
     }
 
-    public IEnumerator NextQuestion(string pin, string answer, bool last)
+    public IEnumerator NextQuestion(string pin, string answer)
     {
         WWWForm form = new WWWForm();
         form.AddField("pin", pin);
         form.AddField("correctAnswer", answer);
-
-        if(last)
-        {
-            form.AddField("lastQuestion", 1);
-        }
 
         using (UnityWebRequest www = UnityWebRequest.Post("http://78.141.212.87:8000/games/nextquestion", form))
         {
@@ -177,11 +172,16 @@ public class API : MonoBehaviour
         }
     }
 
-    public IEnumerator correctAnswer(string pin, string answer)
+    public IEnumerator correctAnswer(string pin, string answer, bool last)
     {
         WWWForm form = new WWWForm();
         form.AddField("pin", pin);
         form.AddField("correctAnswer", answer);
+
+        if(last)
+        {
+            form.AddField("lastQuestion", 1);
+        }
 
         using (UnityWebRequest www = UnityWebRequest.Post("http://78.141.212.87:8000/games/sendcorrectanswer", form))
         {

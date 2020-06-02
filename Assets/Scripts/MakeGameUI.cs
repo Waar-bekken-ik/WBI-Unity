@@ -55,9 +55,9 @@ public class MakeGameUI : MonoBehaviour
         GameMaster.Instance.game.setMakeRoom(int.Parse(rounds.text), int.Parse(time.text));
     }
 
-    public void NextQuestion(bool last)
+    public void NextQuestion()
     {
-        GameMaster.Instance.game.nextQuestion(last);
+        GameMaster.Instance.game.nextQuestion();
         currentQuestion.text = GameMaster.Instance.game.getCurrentQuestion();
 
         dublicateNamesAnswered.Clear();
@@ -66,9 +66,9 @@ public class MakeGameUI : MonoBehaviour
         peopleCount.text =  "0" + "/" + dublicateNames.Count.ToString();
     }
 
-    public void CheckAnswer()
+    public void CheckAnswer(bool last)
     {
-        GameMaster.Instance.game.checkAnswer();
+        GameMaster.Instance.game.checkAnswer(last);
     }
 
     public void addPlayerName(string name)
@@ -129,7 +129,7 @@ public class MakeGameUI : MonoBehaviour
         if(startTimer)
         {
             timer -= Time.deltaTime;
-            timerText.text = timer.ToString();
+            timerText.text = timer.ToString("0");
         }
     }
 
@@ -178,12 +178,14 @@ public class MakeGameUI : MonoBehaviour
             if (!dublicateHighscores.Contains(score))
             {
                 dublicateHighscores.Add(score);
+                Debug.Log(score + " added");
                 break;
             }
         }
 
         if(dublicateHighscores.Count == dublicateNames.Count)
         {
+            Debug.Log("IN DUB NAMES");
             highscoreFilling = false;
             highScoreText.text = calculateHighScore();
             
@@ -194,10 +196,11 @@ public class MakeGameUI : MonoBehaviour
 
     private string calculateHighScore()
     {
-        string[] topNames = new string[dublicateNames.Count];
-        int[] topScores = new int[dublicateNames.Count];
+        string[] topNames = new string[dublicateHighscores.Count];
+        int[] topScores = new int[dublicateHighscores.Count];
         List<int> endScores = new List<int>(){};
         int arrayCounter = 0;
+        Debug.Log("VOOR DE LOGICA IN HIGHSCOEW");
 
         foreach(string score in dublicateHighscores)
         {
@@ -211,22 +214,24 @@ public class MakeGameUI : MonoBehaviour
             endScores.Add(scoreNumber);
 
             arrayCounter++;
+            Debug.Log("IN STRING UIT ELKAAR HALEN");
         }
 
         //score sorteren
         endScores.Sort();
+        Debug.Log("LIST GESORTEERD");
 
         int place1 = System.Array.IndexOf(topScores, endScores[dublicateHighscores.Count -1]);
         int place2 = System.Array.IndexOf(topScores, endScores[dublicateHighscores.Count -2]);
-        int place3 = System.Array.IndexOf(topScores, endScores[dublicateHighscores.Count -3]);
+        //int place3 = System.Array.IndexOf(topScores, endScores[dublicateHighscores.Count -3]);
 
         string[] winner = new string[]{topNames[place1], endScores[dublicateHighscores.Count -1].ToString()};
         string[] second = new string[]{topNames[place2], endScores[dublicateHighscores.Count -2].ToString()};
-        string[] third = new string[]{topNames[place3], endScores[dublicateHighscores.Count -3].ToString()};
+        //string[] third = new string[]{topNames[place3], endScores[dublicateHighscores.Count -3].ToString()};
 
         string highscoreBuilder = winner[0] + " - " + winner[1] + "\n" + 
-                                second[0] + " - " + second[1] + "\n" +
-                                third[0] + " - " + third[1];
+                                second[0] + " - " + second[1] + "\n";
+                                // third[0] + " - " + third[1];
         
         return highscoreBuilder;
     }
@@ -235,11 +240,11 @@ public class MakeGameUI : MonoBehaviour
     {
         if(roundCounter > 1)
         {
-            CheckAnswer();
-            yield return new WaitForSeconds(2f);
+            CheckAnswer(false);
+            yield return new WaitForSeconds(5f);
         }
         
-        NextQuestion(roundCounter == GameMaster.Instance.game.getRounds() ? true : false);
+        NextQuestion();
         
         timer = GameMaster.Instance.game.getTime();
         startTimer = true;
@@ -250,8 +255,11 @@ public class MakeGameUI : MonoBehaviour
         
         if(roundCounter > GameMaster.Instance.game.getRounds())
         {
+            CheckAnswer(true);
             highscoreFilling = true;
             Debug.Log("HIGHSCORES");
+
+            //roundCounter > GameMaster.Instance.game.getRounds() ? true : false
         }
 
         nextQuestionBool = true;
