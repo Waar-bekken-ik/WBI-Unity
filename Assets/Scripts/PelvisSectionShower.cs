@@ -46,7 +46,7 @@ public class PelvisSectionShower : MonoBehaviour
     void Start()
     {
         //MoveTowards("vagina");
-        StartCoroutine(testRoutine());
+        //StartCoroutine(testRoutine());
     }
 
     // Update is called once per frame

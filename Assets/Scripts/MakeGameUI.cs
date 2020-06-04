@@ -188,9 +188,12 @@ public class MakeGameUI : MonoBehaviour
             Debug.Log("IN DUB NAMES");
             highscoreFilling = false;
             highScoreText.text = calculateHighScore();
-            
-            highscorePanel.SetActive(true);
+
             questionPanel.SetActive(false);
+
+            PelvisSectionShower.Instance.ResetCamera();
+
+            StartCoroutine(showHighScoreUI());
         }
     }
 
@@ -200,7 +203,7 @@ public class MakeGameUI : MonoBehaviour
         int[] topScores = new int[dublicateHighscores.Count];
         List<int> endScores = new List<int>(){};
         int arrayCounter = 0;
-        Debug.Log("VOOR DE LOGICA IN HIGHSCOEW");
+        //Debug.Log("VOOR DE LOGICA IN HIGHSCOEW");
 
         foreach(string score in dublicateHighscores)
         {
@@ -214,12 +217,12 @@ public class MakeGameUI : MonoBehaviour
             endScores.Add(scoreNumber);
 
             arrayCounter++;
-            Debug.Log("IN STRING UIT ELKAAR HALEN");
+            //Debug.Log("IN STRING UIT ELKAAR HALEN");
         }
 
         //score sorteren
         endScores.Sort();
-        Debug.Log("LIST GESORTEERD");
+        //Debug.Log("LIST GESORTEERD");
 
         int place1 = System.Array.IndexOf(topScores, endScores[dublicateHighscores.Count -1]);
         int place2 = System.Array.IndexOf(topScores, endScores[dublicateHighscores.Count -2]);
@@ -245,6 +248,8 @@ public class MakeGameUI : MonoBehaviour
         }
         
         NextQuestion();
+
+        yield return new WaitForSeconds(3.5f);
         
         timer = GameMaster.Instance.game.getTime();
         startTimer = true;
@@ -279,5 +284,11 @@ public class MakeGameUI : MonoBehaviour
             toggle.GetComponent<ToggleQ>().SetName(question);
             startPos -= 20f;
         }
+    }
+
+    private IEnumerator showHighScoreUI()
+    {
+        yield return new WaitForSeconds(2.5f);
+        highscorePanel.SetActive(true);
     }
 }

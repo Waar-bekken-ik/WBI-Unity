@@ -77,15 +77,25 @@ public class Game : MonoBehaviour
     {
         if(questionCounter <= rounds)
         {
-            StartCoroutine(API.Instance.NextQuestion(pin, questions[questionCounter]));
-            currentQuestion = questions[questionCounter];
-            questionCounter++;
+            StartCoroutine(nextQuestionTimer());
         }
     }
 
     public void checkAnswer(bool last)
     {
         StartCoroutine(API.Instance.correctAnswer(pin, questions[questionCounter-1], last));
+    }
+
+    private IEnumerator nextQuestionTimer()
+    {
+        currentQuestion = questions[questionCounter];
+        PelvisSectionShower.Instance.MoveTowards(currentQuestion);
+
+        yield return new WaitForSeconds(2.5f);
+        
+        StartCoroutine(API.Instance.NextQuestion(pin, questions[questionCounter]));
+        questionCounter++;
+
     }
 
     public override string ToString()
