@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 public class MakeGameUI : MonoBehaviour
 {
@@ -35,6 +36,7 @@ public class MakeGameUI : MonoBehaviour
 
     public Text timerText;
     public Text highScoreText;
+    public Slider timerSlider;
 
     public Text peopleJoinedCounterText;
 
@@ -58,6 +60,7 @@ public class MakeGameUI : MonoBehaviour
         startPanel.SetActive(true);
 
         GameMaster.Instance.game.setMakeRoom(GameMaster.Instance.game.getQuestionsCount(), int.Parse(time.text));
+        timerSlider.maxValue = int.Parse(time.text);
     }
 
     public void NextQuestion()
@@ -109,7 +112,7 @@ public class MakeGameUI : MonoBehaviour
         makePanel.SetActive(false);
         startPanel.SetActive(false);
 
-        questionPanel.SetActive(true);
+        //questionPanel.SetActive(true);
         //NextQuestion();
         StartCoroutine(waitTillStart());
 
@@ -150,7 +153,9 @@ public class MakeGameUI : MonoBehaviour
         if(startTimer)
         {
             timer -= Time.deltaTime;
-            timerText.text = timer.ToString("0");
+            //timerText.text = timer.ToString("0");
+
+            timerSlider.value -= Time.deltaTime;
         }
     }
 
@@ -285,6 +290,7 @@ public class MakeGameUI : MonoBehaviour
         yield return new WaitForSeconds(3.5f);
         
         timer = GameMaster.Instance.game.getTime();
+        timerSlider.value = GameMaster.Instance.game.getTime();
         startTimer = true;
 
         yield return new WaitForSeconds(GameMaster.Instance.game.getTime());
@@ -337,5 +343,10 @@ public class MakeGameUI : MonoBehaviour
     {
         yield return new WaitForSeconds(2.5f);
         highscorePanel.SetActive(true);
+    }
+
+    public void BackToMenu()
+    {
+        SceneManager.LoadScene(0);
     }
 }
