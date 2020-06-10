@@ -14,4 +14,9 @@ public class RotateZoomObject : MonoBehaviour
         transform.RotateAround(Vector3.up, -rotX);
         transform.RotateAround(Vector3.right, rotY);
     }
+
+    private void Update() 
+    {
+        transform.RotateAround(Vector3.up, -0.1f * Time.deltaTime);
+    }
 }

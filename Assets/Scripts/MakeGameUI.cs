@@ -18,6 +18,7 @@ public class MakeGameUI : MonoBehaviour
     public GameObject panel0;
     public GameObject questionPanel;
     public GameObject highscorePanel;
+    public GameObject correctAwnserObject;
 
     private List<string> dublicateNames = new List<string>();
     private List<string> dublicateNamesAnswered = new List<string>();
@@ -65,13 +66,14 @@ public class MakeGameUI : MonoBehaviour
 
     public void NextQuestion()
     {
+        correctAwnserObject.SetActive(false);
         GameMaster.Instance.game.nextQuestion();
         currentQuestion.text = GameMaster.Instance.game.getCurrentQuestion();
 
         dublicateNamesAnswered.Clear();
         PusherManager.instance.ResetPlayerAnswered();
         peopleAnswered.text = "";
-        peopleCount.text =  "0" + "/" + dublicateNames.Count.ToString();
+        peopleCount.text =  "0" + "/" + dublicateNames.Count.ToString() + " hebben geantwoord";
     }
 
     public void ShowHelpText(int wich)
@@ -93,6 +95,7 @@ public class MakeGameUI : MonoBehaviour
     public void CheckAnswer(bool last)
     {
         GameMaster.Instance.game.checkAnswer(last);
+        correctAwnserObject.SetActive(true);
     }
 
     public void addPlayerName(string name)
@@ -112,7 +115,6 @@ public class MakeGameUI : MonoBehaviour
         makePanel.SetActive(false);
         startPanel.SetActive(false);
 
-        //questionPanel.SetActive(true);
         //NextQuestion();
         StartCoroutine(waitTillStart());
 
@@ -185,7 +187,7 @@ public class MakeGameUI : MonoBehaviour
             {
                 dublicateNamesAnswered.Add(player);
                 peopleAnswered.text += player + "\n";
-                peopleCount.text =  PusherManager.instance.getPlayerAnswered().Count.ToString() + "/" + dublicateNames.Count.ToString();
+                peopleCount.text =  PusherManager.instance.getPlayerAnswered().Count.ToString() + "/" + dublicateNames.Count.ToString() + " hebben geantwoord";
                 break;
             }
         }
@@ -195,6 +197,7 @@ public class MakeGameUI : MonoBehaviour
     {
         yield return new WaitForSeconds(1f);
         //NextQuestion();
+        questionPanel.SetActive(true);
         nextQuestionBool = true;
     }
 
@@ -217,6 +220,7 @@ public class MakeGameUI : MonoBehaviour
             highscoreFilling = false;
             highScoreText.text = calculateHighScore();
 
+            correctAwnserObject.SetActive(false);
             questionPanel.SetActive(false);
 
             PelvisSectionShower.Instance.ResetCamera();
@@ -258,19 +262,19 @@ public class MakeGameUI : MonoBehaviour
         {
             int place1 = System.Array.IndexOf(topScores, endScores[dublicateHighscores.Count -1]);
             string[] winner = new string[]{topNames[place1], endScores[dublicateHighscores.Count -1].ToString()};
-            highscoreBuilder += winner[0] + " - " + winner[1] + "\n";
+            highscoreBuilder += "1. " + winner[0] + " met " + winner[1] + " punten \n";
 
             if(dublicateHighscores.Count >= 2)
             {
                 int place2 = System.Array.IndexOf(topScores, endScores[dublicateHighscores.Count -2]);
                 string[] second = new string[]{topNames[place2], endScores[dublicateHighscores.Count -2].ToString()};
-                highscoreBuilder += second[0] + " - " + second[1] + "\n";
+                highscoreBuilder += "2. " + second[0] + " met " + second[1] + " punten \n";
 
                 if(dublicateHighscores.Count >= 3)
                 {
                     int place3 = System.Array.IndexOf(topScores, endScores[dublicateHighscores.Count -3]);
                     string[] third = new string[]{topNames[place3], endScores[dublicateHighscores.Count -3].ToString()};
-                    highscoreBuilder += third[0] + " - " + third[1];
+                    highscoreBuilder += "3. " + third[0] + " met " + third[1] + " punten";
                 }
             }
         }
