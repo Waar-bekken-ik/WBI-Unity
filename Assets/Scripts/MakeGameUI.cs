@@ -14,6 +14,7 @@ public class MakeGameUI : MonoBehaviour
 
     public GameObject makePanel;
     public GameObject startPanel;
+    public GameObject panel0;
     public GameObject questionPanel;
     public GameObject highscorePanel;
 
@@ -35,6 +36,10 @@ public class MakeGameUI : MonoBehaviour
     public Text timerText;
     public Text highScoreText;
 
+    public Text peopleJoinedCounterText;
+
+    public GameObject[] helpTexts;
+
     //game running vars
     private int roundCounter = 1;
     private bool nextQuestionBool = false;
@@ -52,7 +57,7 @@ public class MakeGameUI : MonoBehaviour
         makePanel.SetActive(false);
         startPanel.SetActive(true);
 
-        GameMaster.Instance.game.setMakeRoom(int.Parse(rounds.text), int.Parse(time.text));
+        GameMaster.Instance.game.setMakeRoom(GameMaster.Instance.game.getQuestionsCount(), int.Parse(time.text));
     }
 
     public void NextQuestion()
@@ -64,6 +69,22 @@ public class MakeGameUI : MonoBehaviour
         PusherManager.instance.ResetPlayerAnswered();
         peopleAnswered.text = "";
         peopleCount.text =  "0" + "/" + dublicateNames.Count.ToString();
+    }
+
+    public void ShowHelpText(int wich)
+    {
+        helpTexts[wich].SetActive(true);
+    }
+
+    public void HideHelpText(int wich)
+    {
+        helpTexts[wich].SetActive(false);
+    }
+
+    public void ShowChoosePanel()
+    {
+        makePanel.SetActive(true);
+        panel0.SetActive(false);
     }
 
     public void CheckAnswer(bool last)
@@ -143,6 +164,8 @@ public class MakeGameUI : MonoBehaviour
             {
                 dublicateNames.Add(player);
                 people.text += player + "\n";
+
+                peopleJoinedCounterText.text = dublicateNames.Count.ToString() + ((dublicateNames.Count == 1) ? " student speelt mee" : " studenten spelen mee");
                 break;
             }
         }
@@ -224,18 +247,28 @@ public class MakeGameUI : MonoBehaviour
         endScores.Sort();
         //Debug.Log("LIST GESORTEERD");
 
-        int place1 = System.Array.IndexOf(topScores, endScores[dublicateHighscores.Count -1]);
-        int place2 = System.Array.IndexOf(topScores, endScores[dublicateHighscores.Count -2]);
-        //int place3 = System.Array.IndexOf(topScores, endScores[dublicateHighscores.Count -3]);
+        string highscoreBuilder = "";
 
-        string[] winner = new string[]{topNames[place1], endScores[dublicateHighscores.Count -1].ToString()};
-        string[] second = new string[]{topNames[place2], endScores[dublicateHighscores.Count -2].ToString()};
-        //string[] third = new string[]{topNames[place3], endScores[dublicateHighscores.Count -3].ToString()};
+        if(dublicateHighscores.Count >= 1)
+        {
+            int place1 = System.Array.IndexOf(topScores, endScores[dublicateHighscores.Count -1]);
+            string[] winner = new string[]{topNames[place1], endScores[dublicateHighscores.Count -1].ToString()};
+            highscoreBuilder += winner[0] + " - " + winner[1] + "\n";
 
-        string highscoreBuilder = winner[0] + " - " + winner[1] + "\n" + 
-                                second[0] + " - " + second[1] + "\n";
-                                // third[0] + " - " + third[1];
-        
+            if(dublicateHighscores.Count >= 2)
+            {
+                int place2 = System.Array.IndexOf(topScores, endScores[dublicateHighscores.Count -2]);
+                string[] second = new string[]{topNames[place2], endScores[dublicateHighscores.Count -2].ToString()};
+                highscoreBuilder += second[0] + " - " + second[1] + "\n";
+
+                if(dublicateHighscores.Count >= 3)
+                {
+                    int place3 = System.Array.IndexOf(topScores, endScores[dublicateHighscores.Count -3]);
+                    string[] third = new string[]{topNames[place3], endScores[dublicateHighscores.Count -3].ToString()};
+                    highscoreBuilder += third[0] + " - " + third[1];
+                }
+            }
+        }
         return highscoreBuilder;
     }
 
@@ -274,15 +307,29 @@ public class MakeGameUI : MonoBehaviour
     {
         yield return new WaitForSeconds(2f);
         
-        float startPos = 135;
+        float startPosLeft = 337;
+        float startPosRight = 337;
+        bool setLeft = true;
 
         foreach(string question in GameMaster.Instance.availableQuestions)
         {
             var toggle = Instantiate(myToggle, new Vector3(0,0,0), Quaternion.identity);
             toggle.transform.SetParent(scrollViewContent.transform);
-            toggle.GetComponent<RectTransform>().anchoredPosition = new Vector2(-6,startPos);
-            toggle.GetComponent<ToggleQ>().SetName(question);
-            startPos -= 20f;
+
+            if(setLeft)
+            {
+                toggle.GetComponent<RectTransform>().anchoredPosition = new Vector2(-460,startPosLeft);
+                startPosLeft -= 137f;
+                setLeft = false;
+            }
+            else
+            {
+                toggle.GetComponent<RectTransform>().anchoredPosition = new Vector2(460,startPosRight);
+                startPosRight -= 137f;
+                setLeft = true;
+            }
+
+            toggle.GetComponent<TogglePart>().SetName(question);
         }
     }
 

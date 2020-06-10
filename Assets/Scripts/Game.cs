@@ -40,6 +40,10 @@ public class Game : MonoBehaviour
     {
         return players;
     }
+    public int getQuestionsCount()
+    {
+        return questions.Count;
+    } 
 
     public string getCurrentQuestion()
     {
