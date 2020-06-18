@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 public class MakeGameUI : MonoBehaviour
 {
@@ -14,14 +15,19 @@ public class MakeGameUI : MonoBehaviour
 
     public GameObject makePanel;
     public GameObject startPanel;
+    public GameObject panel0;
     public GameObject questionPanel;
+    public GameObject highscorePanel;
+    public GameObject correctAwnserObject;
 
     private List<string> dublicateNames = new List<string>();
     private List<string> dublicateNamesAnswered = new List<string>();
+    private List<string> dublicateHighscores = new List<string>();
 
 
     private bool joining = true;
     private bool playing = false;
+    private bool highscoreFilling = false;
 
     public GameObject scrollViewContent;
     public GameObject myToggle;
@@ -29,20 +35,24 @@ public class MakeGameUI : MonoBehaviour
     public Text peopleAnswered;
     public Text peopleCount;
 
+    public Text timerText;
+    public Text highScoreText;
+    public Slider timerSlider;
+
+    public Text peopleJoinedCounterText;
+
+    public GameObject[] helpTexts;
+
+    //game running vars
+    private int roundCounter = 1;
+    private bool nextQuestionBool = false;
+    private float timer;
+    private bool startTimer = false;
+
     void Start() 
     {
         //als api request er is de data daarmee aanvullen
-        //string[] questions = new string[] { "eierstokken", "schaamlippen", "dunnedarm", "dikkedarm", "schaamlippen"};
-        float startPos = 135;
-
-        foreach(string question in GameMaster.Instance.availableQuestions)
-        {
-            var toggle = Instantiate(myToggle, new Vector3(0,0,0), Quaternion.identity);
-            toggle.transform.SetParent(scrollViewContent.transform);
-            toggle.GetComponent<RectTransform>().anchoredPosition = new Vector2(-6,startPos);
-            toggle.GetComponent<ToggleQ>().SetName(question);
-            startPos -= 20f;
-        }
+        StartCoroutine(fillQuestions());
     }
 
     public void MakeGame()
@@ -50,23 +60,42 @@ public class MakeGameUI : MonoBehaviour
         makePanel.SetActive(false);
         startPanel.SetActive(true);
 
-        GameMaster.Instance.game.setMakeRoom(int.Parse(rounds.text), int.Parse(time.text));
+        GameMaster.Instance.game.setMakeRoom(GameMaster.Instance.game.getQuestionsCount(), int.Parse(time.text));
+        timerSlider.maxValue = int.Parse(time.text);
     }
 
     public void NextQuestion()
     {
+        correctAwnserObject.SetActive(false);
         GameMaster.Instance.game.nextQuestion();
         currentQuestion.text = GameMaster.Instance.game.getCurrentQuestion();
 
         dublicateNamesAnswered.Clear();
         PusherManager.instance.ResetPlayerAnswered();
         peopleAnswered.text = "";
-        peopleCount.text =  "0" + "/" + dublicateNames.Count.ToString();
+        peopleCount.text =  "0" + "/" + dublicateNames.Count.ToString() + " hebben geantwoord";
     }
 
-    public void CheckAnswer()
+    public void ShowHelpText(int wich)
     {
-        GameMaster.Instance.game.checkAnswer();
+        helpTexts[wich].SetActive(true);
+    }
+
+    public void HideHelpText(int wich)
+    {
+        helpTexts[wich].SetActive(false);
+    }
+
+    public void ShowChoosePanel()
+    {
+        makePanel.SetActive(true);
+        panel0.SetActive(false);
+    }
+
+    public void CheckAnswer(bool last)
+    {
+        GameMaster.Instance.game.checkAnswer(last);
+        correctAwnserObject.SetActive(true);
     }
 
     public void addPlayerName(string name)
@@ -86,7 +115,6 @@ public class MakeGameUI : MonoBehaviour
         makePanel.SetActive(false);
         startPanel.SetActive(false);
 
-        questionPanel.SetActive(true);
         //NextQuestion();
         StartCoroutine(waitTillStart());
 
@@ -103,7 +131,33 @@ public class MakeGameUI : MonoBehaviour
         
         if(playing)
         {
+            joining = false;
+
+            if((roundCounter <= GameMaster.Instance.game.getRounds()) && nextQuestionBool)
+            {
+                nextQuestionBool = false;
+                StartCoroutine(NextQuestionRoutine());
+                roundCounter++;
+            }
+
+            timerRunning();
             fillPlayerAnswers();
+        }
+        if(highscoreFilling)
+        {
+            playing = false;
+            processHighscore();
+        }
+    }
+
+    private void timerRunning()
+    {
+        if(startTimer)
+        {
+            timer -= Time.deltaTime;
+            //timerText.text = timer.ToString("0");
+
+            timerSlider.value -= Time.deltaTime;
         }
     }
 
@@ -117,6 +171,8 @@ public class MakeGameUI : MonoBehaviour
             {
                 dublicateNames.Add(player);
                 people.text += player + "\n";
+
+                peopleJoinedCounterText.text = dublicateNames.Count.ToString() + ((dublicateNames.Count == 1) ? " student speelt mee" : " studenten spelen mee");
                 break;
             }
         }
@@ -131,7 +187,7 @@ public class MakeGameUI : MonoBehaviour
             {
                 dublicateNamesAnswered.Add(player);
                 peopleAnswered.text += player + "\n";
-                peopleCount.text =  PusherManager.instance.getPlayerAnswered().Count.ToString() + "/" + dublicateNames.Count.ToString();
+                peopleCount.text =  PusherManager.instance.getPlayerAnswered().Count.ToString() + "/" + dublicateNames.Count.ToString() + " hebben geantwoord";
                 break;
             }
         }
@@ -140,6 +196,161 @@ public class MakeGameUI : MonoBehaviour
     private IEnumerator waitTillStart()
     {
         yield return new WaitForSeconds(1f);
+        //NextQuestion();
+        questionPanel.SetActive(true);
+        nextQuestionBool = true;
+    }
+
+    private void processHighscore()
+    { 
+        //pusher werkt kut, sorry voor deze lelijke slechte code;
+        foreach (string score in PusherManager.instance.getHighscores())
+        {
+            if (!dublicateHighscores.Contains(score))
+            {
+                dublicateHighscores.Add(score);
+                Debug.Log(score + " added");
+                break;
+            }
+        }
+
+        if(dublicateHighscores.Count == dublicateNames.Count)
+        {
+            Debug.Log("IN DUB NAMES");
+            highscoreFilling = false;
+            highScoreText.text = calculateHighScore();
+
+            correctAwnserObject.SetActive(false);
+            questionPanel.SetActive(false);
+
+            PelvisSectionShower.Instance.ResetCamera();
+
+            StartCoroutine(showHighScoreUI());
+        }
+    }
+
+    private string calculateHighScore()
+    {
+        string[] topNames = new string[dublicateHighscores.Count];
+        int[] topScores = new int[dublicateHighscores.Count];
+        List<int> endScores = new List<int>(){};
+        int arrayCounter = 0;
+        //Debug.Log("VOOR DE LOGICA IN HIGHSCOEW");
+
+        foreach(string score in dublicateHighscores)
+        {
+            //string uit elkaar halen
+            string[] data = score.Split(',');
+            int scoreNumber = int.Parse(data[1]);
+
+            //waardes apart zetten
+            topNames[arrayCounter] = data[0];
+            topScores[arrayCounter] = scoreNumber;
+            endScores.Add(scoreNumber);
+
+            arrayCounter++;
+            //Debug.Log("IN STRING UIT ELKAAR HALEN");
+        }
+
+        //score sorteren
+        endScores.Sort();
+        //Debug.Log("LIST GESORTEERD");
+
+        string highscoreBuilder = "";
+
+        if(dublicateHighscores.Count >= 1)
+        {
+            int place1 = System.Array.IndexOf(topScores, endScores[dublicateHighscores.Count -1]);
+            string[] winner = new string[]{topNames[place1], endScores[dublicateHighscores.Count -1].ToString()};
+            highscoreBuilder += "1. " + winner[0] + " met " + winner[1] + " punten \n";
+
+            if(dublicateHighscores.Count >= 2)
+            {
+                int place2 = System.Array.IndexOf(topScores, endScores[dublicateHighscores.Count -2]);
+                string[] second = new string[]{topNames[place2], endScores[dublicateHighscores.Count -2].ToString()};
+                highscoreBuilder += "2. " + second[0] + " met " + second[1] + " punten \n";
+
+                if(dublicateHighscores.Count >= 3)
+                {
+                    int place3 = System.Array.IndexOf(topScores, endScores[dublicateHighscores.Count -3]);
+                    string[] third = new string[]{topNames[place3], endScores[dublicateHighscores.Count -3].ToString()};
+                    highscoreBuilder += "3. " + third[0] + " met " + third[1] + " punten";
+                }
+            }
+        }
+        return highscoreBuilder;
+    }
+
+    private IEnumerator NextQuestionRoutine()
+    {
+        if(roundCounter > 1)
+        {
+            CheckAnswer(false);
+            yield return new WaitForSeconds(5f);
+        }
+        
         NextQuestion();
+
+        yield return new WaitForSeconds(3.5f);
+        
+        timer = GameMaster.Instance.game.getTime();
+        timerSlider.value = GameMaster.Instance.game.getTime();
+        startTimer = true;
+
+        yield return new WaitForSeconds(GameMaster.Instance.game.getTime());
+
+        startTimer = false;
+        
+        if(roundCounter > GameMaster.Instance.game.getRounds())
+        {
+            CheckAnswer(true);
+            highscoreFilling = true;
+            Debug.Log("HIGHSCORES");
+
+            //roundCounter > GameMaster.Instance.game.getRounds() ? true : false
+        }
+
+        nextQuestionBool = true;
+    }
+
+    private IEnumerator fillQuestions()
+    {
+        yield return new WaitForSeconds(2f);
+        
+        float startPosLeft = 337;
+        float startPosRight = 337;
+        bool setLeft = true;
+
+        foreach(string question in GameMaster.Instance.availableQuestions)
+        {
+            var toggle = Instantiate(myToggle, new Vector3(0,0,0), Quaternion.identity);
+            toggle.transform.SetParent(scrollViewContent.transform);
+
+            if(setLeft)
+            {
+                toggle.GetComponent<RectTransform>().anchoredPosition = new Vector2(-460,startPosLeft);
+                startPosLeft -= 137f;
+                setLeft = false;
+            }
+            else
+            {
+                toggle.GetComponent<RectTransform>().anchoredPosition = new Vector2(460,startPosRight);
+                startPosRight -= 137f;
+                setLeft = true;
+            }
+
+            toggle.GetComponent<TogglePart>().SetName(question);
+        }
+    }
+
+    private IEnumerator showHighScoreUI()
+    {
+        yield return new WaitForSeconds(2.5f);
+        highscorePanel.SetActive(true);
+    }
+
+    public void BackToMenu()
+    {
+        SceneManager.LoadScene(0);
     }
 }

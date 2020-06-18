@@ -13,6 +13,7 @@ public class PusherManager : MonoBehaviour
     private const string APP_CLUSTER = "eu";
     private List<string> playerNames = new List<string>();
     private List<string> playerAnswered = new List<string>();
+    private List<string> highScores = new List<string>();
 
     async Task Start()
     {
@@ -79,6 +80,12 @@ public class PusherManager : MonoBehaviour
             Debug.Log("answered= " + data.data);
             playerAnswered.Add(data.data.ToString());
         });
+
+        _channel.Bind("send-score", (dynamic data) =>
+        {
+            Debug.Log("answered= " + data.data);
+            highScores.Add(data.data.ToString());
+        });
     }
 
     private void PusherOnConnectionStateChanged(object sender, ConnectionState state)
@@ -94,6 +101,11 @@ public class PusherManager : MonoBehaviour
     public List<string> getPlayerAnswered()
     {
         return playerAnswered;
+    }
+
+    public List<string> getHighscores()
+    {
+        return highScores;
     }
 
     public void ResetPlayerAnswered()

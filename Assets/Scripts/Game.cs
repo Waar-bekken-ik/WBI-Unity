@@ -17,6 +17,14 @@ public class Game : MonoBehaviour
     {
         return pin;
     }
+    public int getTime()
+    {
+        return time;
+    }
+    public int getRounds()
+    {
+        return rounds;
+    }
     public void setPin(string pinRoom)
     {
         if(pin == null)
@@ -32,6 +40,10 @@ public class Game : MonoBehaviour
     {
         return players;
     }
+    public int getQuestionsCount()
+    {
+        return questions.Count;
+    } 
 
     public string getCurrentQuestion()
     {
@@ -67,14 +79,27 @@ public class Game : MonoBehaviour
 
     public void nextQuestion()
     {
-        StartCoroutine(API.Instance.NextQuestion(pin, questions[questionCounter]));
-        currentQuestion = questions[questionCounter];
-        questionCounter++;
+        if(questionCounter <= rounds)
+        {
+            StartCoroutine(nextQuestionTimer());
+        }
     }
 
-    public void checkAnswer()
+    public void checkAnswer(bool last)
     {
-        StartCoroutine(API.Instance.correctAnswer(pin, questions[questionCounter-1]));
+        StartCoroutine(API.Instance.correctAnswer(pin, questions[questionCounter-1], last));
+    }
+
+    private IEnumerator nextQuestionTimer()
+    {
+        currentQuestion = questions[questionCounter];
+        PelvisSectionShower.Instance.MoveTowards(currentQuestion);
+
+        yield return new WaitForSeconds(2.5f);
+        
+        StartCoroutine(API.Instance.NextQuestion(pin, questions[questionCounter]));
+        questionCounter++;
+
     }
 
     public override string ToString()
